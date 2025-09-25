@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import Prompt from './components/Prompt';
 
 function App() {
   const [name, setName] = useState("");
@@ -10,15 +11,15 @@ function App() {
     const form = e.currentTarget
     const formData = new FormData(form)
 
-    const formJson = Object.fromEntries(formData.entries());
-    console.log(formJson.username);
+    const formJson = Object.fromEntries(formData.entries())
+    console.log(formJson.username)
 
     setName("");
   }
 
   return (
     <>
-      <p>Prompt: butterflies</p>
+      <Prompt />
       <form method="post" onSubmit={handleSubmit}>
         <input 
           type="text"
