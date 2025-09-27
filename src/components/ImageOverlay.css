@@ -1,0 +1,26 @@
+/* modal overlay container */
+.modal {
+  position: fixed;      /* cover the viewport */
+  inset: 0;             /* top:0; right:0; bottom:0; left:0 */
+  background: rgba(0, 0, 0, 0.8); /* semi-transparent black */
+  display: flex;        /* center content */
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;        /* ensure it’s above other content */
+  cursor: zoom-out;     /* indicate click closes it */
+}
+
+/* image inside the modal */
+.modal img {
+  max-width: 90%;       /* don’t overflow viewport */
+  max-height: 90%;
+  border-radius: 8px;
+  object-fit: contain;  /* preserve aspect ratio */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease; /* optional scale effect */
+}
+
+/* optional: hover scale */
+.modal img:hover {
+  transform: scale(1.02);
+}
