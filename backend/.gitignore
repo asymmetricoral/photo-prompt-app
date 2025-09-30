@@ -1,0 +1,18 @@
+# Cargo build
+/target/
+
+# Executables (in case you build with --release and copy binaries)
+*.exe
+*.out
+*.app
+
+# Rust / Cargo extras
+Cargo.lock
+**/*.rs.bk
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -13,18 +13,24 @@ export class ImageRecord {
 }
 
 async function fetchImages() {
-    const response = await fetch("/images.txt");
-    const text = await response.text();
-    return text
-        .split("\n")
-        .map(
-            l => (
-                l.split(",").map(
-                    w => w.trim()) as [string, string, string]
-            ))
-        .map(
-            parts => new ImageRecord(parts)
-        );
+    const response = await fetch("http://127.0.0.1:3000/api/getimage");
+    const responseJson = await response.json();
+    const imgRecord = new ImageRecord([
+    responseJson.imageUrl,
+    responseJson.imageDescription,
+    responseJson.createdAtUnixTimestamp.toString(),
+    ]);
+    return [imgRecord];
+    // return text
+    //     .split("\n")
+    //     .map(
+    //         l => (
+    //             l.split(",").map(
+    //                 w => w.trim()) as [string, string, string]
+    //         ))
+    //     .map(
+    //         parts => new ImageRecord(parts)
+    //     );
 }
 
 const useImages = () => {
