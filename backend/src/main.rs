@@ -1,8 +1,12 @@
-use axum::{http::Method, http::StatusCode, routing::get, Json, Router};
-use tower_http::cors::{CorsLayer, Any};
-use serde::{Serialize};
+use axum::{Json, Router, http::Method, http::StatusCode, routing::get};
+use serde::Serialize;
+use std::io::BufRead;
+use std::path::Path;
+use std::{fs::File, str::FromStr};
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
+use tower_http::cors::{Any, CorsLayer};
+use anyhow::anyhow;
 
 #[tokio::main]
 async fn main() {
@@ -11,7 +15,7 @@ async fn main() {
         .allow_origin(Any); // 👈 you can restrict this later
 
     let app = Router::new()
-        .route("/api/getimage", get(return_image))
+        .route("/api/getimage", get(return_images_from_file))
         .layer(cors); // 👈 add layer
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
@@ -19,6 +23,31 @@ async fn main() {
     println!("Listening on {}", addr);
 
     axum::serve(listener, app).await.unwrap();
+}
+
+async fn return_images_from_file() -> (StatusCode, Json<Vec<Image>>) {
+    let images = images_from_filepath("test/images.txt");
+    match images {
+        Ok(x) => (StatusCode::CREATED, Json(x)),
+        Err(x) => (StatusCode::IM_A_TEAPOT, Json(vec![])) // return something with an error message
+    }
+}
+
+fn images_from_filepath(filepath: &str) -> anyhow::Result<Vec<Image>> {
+    let lines = read_lines(filepath)?;
+    // Consumes the iterator, returns an (Optional) String
+    let mut images = vec![];
+    for line in lines.map_while(Result::ok) {
+        images.push(line.parse()?);
+    }
+    Ok(images)
+    
+}
+
+fn read_lines<P>(filename: P) -> std::io::Result<std::io::Lines<std::io::BufReader<File>>>
+where P: AsRef<Path>, {
+    let file = File::open(filename)?;
+    Ok(std::io::BufReader::new(file).lines())
 }
 
 async fn return_image() -> (StatusCode, Json<Image>) {
@@ -37,5 +66,18 @@ async fn return_image() -> (StatusCode, Json<Image>) {
 struct Image {
     imageUrl: String,
     imageDescription: String,
-    createdAtUnixTimestamp: i64
+    createdAtUnixTimestamp: i64,
+}
+
+impl FromStr for Image {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> anyhow::Result<Image> {
+        let [imageUrl, imageDescription, timestamp] = s.split("|").collect::<Vec<_>>()[..] else {
+            return Err(anyhow!("The string is not in the required format."));
+        };
+        let imageUrl = imageUrl.to_owned();
+        let imageDescription = imageDescription.to_owned();
+       Ok(Image { imageUrl, imageDescription, createdAtUnixTimestamp: timestamp.parse()? })
+    }
 }
